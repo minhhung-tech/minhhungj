@@ -105,3 +105,15 @@ process.on('exit', () => {
         startBot();
     }, 1000);
 });
+const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => {
+    res.send("Zalo Bot Running");
+});
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log("Web server running on port " + PORT);
+});
