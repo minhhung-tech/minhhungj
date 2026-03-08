@@ -24,18 +24,29 @@
 
 import { spawn } from 'child_process';
 import path from 'path';
-const cmdPath = path.join('C:', 'Windows', 'System32', 'cmd.exe');
+import express from "express";
 import { ensureLogFiles, logManagerBot } from './src/utils/io-json.js';
+
+const cmdPath = process.platform === "win32" ? "cmd.exe" : "bash";
 
 let botProcess;
 
 function startBot() {
-    botProcess = spawn(cmdPath, ['/c', 'npm start'], {
-        detached: true,
-        stdio: 'ignore'
-    });
+
+    botProcess = spawn(
+        cmdPath,
+        process.platform === "win32"
+            ? ['/c', 'npm start']
+            : ['-c', 'npm start'],
+        {
+            detached: true,
+            stdio: 'ignore'
+        }
+    );
+
     attachBotEvents(botProcess);
     botProcess.unref();
+
     logManagerBot('Bot started');
     console.log('Bot started');
 }
@@ -69,6 +80,7 @@ ensureLogFiles();
 startBot();
 
 function attachBotEvents(botProcess) {
+
     botProcess.on('error', (err) => {
         logManagerBot(`Bot gặp lỗi: ${err.message}`);
         console.error('Lỗi bot:', err.message);
@@ -80,11 +92,13 @@ function attachBotEvents(botProcess) {
         console.log('Bot đã thoát:', code);
         restartBot();
     });
+
 }
 
 setInterval(() => {
     // restartBot();
 }, 1800000);//30p
+
 
 process.on('SIGINT', () => {
     logManagerBot('Bot stopped by user (SIGINT). Restarting...');
@@ -105,7 +119,12 @@ process.on('exit', () => {
         startBot();
     }, 1000);
 });
-const express = require("express");
+
+
+/* ==============================
+   WEB SERVER (FOR RENDER PORT)
+============================== */
+
 const app = express();
 
 app.get("/", (req, res) => {
